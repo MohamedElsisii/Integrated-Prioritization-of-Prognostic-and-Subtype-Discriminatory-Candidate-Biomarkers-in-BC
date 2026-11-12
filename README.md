@@ -1,6 +1,6 @@
 # Integrated Prioritization of Prognostic and Molecular Subtype-Discriminatory Candidate Biomarkers in Breast Cancer
 
-![Graphical abstract](https://github.com/user-attachments/assets/f2f5a393-951d-4927-bfd7-4c97cdd50aea)
+<img width="3600" height="2120" alt="workflow" src="https://github.com/user-attachments/assets/80d0cc5a-0196-46a9-ae57-58de5fa67764" />
 
 ## Overview
 
