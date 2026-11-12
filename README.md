@@ -1,64 +1,70 @@
-# A-Bioinformatics-Framework-for-Subtype-Specific-Prognostic-and-Diagnostic-Biomarker-Discovery-In-BC
-![Copy of Graphical Abstract - Bioinformatic Analysis Reveals Novel Subtype-Specific Prognostic and Diagnostic Biomarkers in Breast Cancer _1](https://github.com/user-attachments/assets/f2f5a393-951d-4927-bfd7-4c97cdd50aea)
+# Integrated Prioritization of Prognostic and Molecular Subtype-Discriminatory Candidate Biomarkers in Breast Cancer
 
-# Overview
-This repository contains the complete bioinformatics workflow associated with our study, "Resolving Breast Cancer Heterogeneity: A Bioinformatics Framework for Subtype-Specific Prognostic and Diagnostic Biomarker Discovery".
+![Graphical abstract](https://github.com/user-attachments/assets/f2f5a393-951d-4927-bfd7-4c97cdd50aea)
 
-Breast cancer (BC) is a highly heterogeneous disease. While molecular subtyping using PAM50 classifier has improved clinical precision, significant variability in patient outcomes persists within each subtype. This framework was developed to bridge this gap by identifying robust, subtype-specific biomarkers that can serve as precise tools for both prognosis and early diagnosis.
+## Overview
 
-Our multi-step analysis integrates differential expression, survival modeling, multivariate Cox regression, and machine learning-based diagnostic evaluation to propose a refined panel of 194 candidate biomarkers across four major molecular subtypes (Luminal A, Luminal B, Basal-like, HER2-enriched).
+This repository contains the complete analysis code for the study
+**"Integrated Prioritization of Prognostic and Molecular Subtype-Discriminatory Candidate Biomarkers in Breast Cancer"** (Elsisi and Maged).
 
-# Workflow
+Breast cancer (BC) is a heterogeneous disease. Molecular subtyping with the PAM50 classifier has improved its classification, but patient outcomes still vary widely within each subtype. This integrated bioinformatics framework prioritizes subtype-specific candidate biomarkers and characterizes their regulatory and functional context.
 
-The analysis pipeline implemented in the provided scripts follows this systematic framework:
+The workflow combines differential expression, survival and Cox regression analyses, cross-validated receiver operating characteristic (ROC) analysis, correlation with PAM50 genes, biotype annotation, pseudogene–parent correlation analysis, and pathway-level functional rewiring. It prioritizes **193 candidate biomarkers** across the four intrinsic subtypes (Luminal A, Luminal B, Basal-like, and HER2-enriched):
 
-1- **Data Acquisition & Subtyping**: Processing TCGA-BRCA RNA-seq data and classifying tumors using the PAM50 classifier.
+- **Prognostic candidates (exploratory):** F2RL2 (Luminal A); GLYATL2, ST8SIA2, PID1, and LRIG3 (Luminal B); TRIM59, LINC01615, DLL3, and CIP2A (Basal-like)
+- **Molecular subtype-discriminatory candidates:** FOXC1 and STAC (Luminal B); 181 genes (Basal-like); HMGN2P15 (HER2-enriched, low confidence)
 
-2- **Differential Expression Analysis**: Identifying unique Differentially Expressed Genes (DEGs) for each subtype against normal tissue using edgeR and limma.
+The candidates were externally evaluated in the SCAN-B cohort (GEO: GSE96058). The molecular subtype-discriminatory candidates were reproduced, whereas the prognostic candidates were only partly replicated. All findings are hypothesis-generating and require further validation before clinical use.
 
-3- **Prognostic Screening**: Kaplan-Meier survival analysis to identify initial prognostic candidates.
+## Workflow
 
-4- **Robust Validation**: Univariate and multivariate Cox proportional hazards regression, adjusted for clinical covariates (age, stage).
+1. **Data acquisition and subtyping:** TCGA-BRCA RNA-seq counts and clinical data (GDC); PAM50 subtyping with genefu.
+2. **Differential expression:** each subtype versus normal breast tissue (edgeR, limma `voomWithQualityWeights`, `treat`, |logFC| ≥ 2, BH < 0.05). Genes significant in exactly one subtype are retained as subtype-specific (unique) DEGs.
+3. **Prognostic screening:** Kaplan–Meier analysis at the optimal cut-point, with p-values corrected for cut-point selection (maximally selected rank statistics, permutation test).
+4. **Cox regression:** univariate and multivariate models (age, stage); proportional hazards testing with pre-specified remedies; continuous-expression and covariate-adjusted sensitivity analyses (treatment, ER/PR/HER2 status).
+5. **Molecular subtype-discriminatory evaluation:** one-versus-rest ROC analysis with repeated stratified 10-fold cross-validation.
+6. **Prioritization:** an integrated prioritization score (IPS) for the Basal-like candidates, with a sensitivity analysis of its weighting.
+7. **Functional characterization:** correlation with PAM50 genes, cancer hallmark enrichment, pseudogene–parent decoupling, and Hallmark pathway rewiring (GSVA).
+8. **External validation:** SCAN-B (GSE96058).
 
-5- **Diagnostic Evaluation**: ROC curve analysis with 10-fold cross-validation to assess discriminatory power.
+## Scripts
 
-6- **Advanced Functional Characterization**:
+| Script | Purpose | Main outputs |
+|---|---|---|
+| `Code_S1.R` | PAM50 subtyping and differential expression | Tables S1–S6 |
+| `Code_S2.R` | Kaplan–Meier screening of unique DEGs; cut-point-corrected (maxstat) and permutation p-values. Run once per subtype (`SUBTYPE <- "LumA"`, `"LumB"`, `"Basal"`) | Tables S7–S10, Files S1–S3 |
+| `Code_S3.R` | Univariate and multivariate Cox regression | Tables S11–S18, Figures S1–S3 |
+| `Code_S4.R` | Final Cox models of the prognostic candidates (PH remedies, unadjusted/age/stage models, continuous expression) and ROC curves | Table S38, Figures S4–S9 |
+| `Code_S5.R` | One-versus-rest ROC with repeated stratified 10-fold cross-validation, including a fixed-direction sensitivity analysis | Tables S19–S22, Figures 3–4, File S4 |
+| `Code_S6.R` | Correlation of candidates with PAM50 genes | Tables S23–S25 |
+| `Code_S7.R` | Pseudogene–parent assignment (BLASTN, explicit thresholds) and decoupling analysis (permutation test, bootstrap CIs) | Tables S28–S29, Figure 5 |
+| `Code_S8.R` | Pathway-level functional rewiring of lncRNAs (GSVA, MSigDB Hallmark) | Tables S30–S31 |
+| `Code_S9.R` | Pathway-level functional rewiring of protein-coding genes (GSVA, MSigDB Hallmark) | Tables S32–S37 |
+| `Code_S10.R` | Sensitivity analysis of the integrated prioritization score | Table S40 |
+| `Code_S11.R` | Adjustment of the final Cox models for treatment and receptor status | Table S42 |
+| `Code_S12.R` | External validation in SCAN-B (GSE96058) | Table S43 |
 
-  - Correlation with PAM50 signature genes.
+Cancer hallmark enrichment (Table S41) was performed with the web tool [cancerhallmarks.com](https://www.cancerhallmarks.com) using the integrated cancer hallmark gene set (n = 6,763 genes).
 
-  - Pseudogene–parent decoupling analysis.
+Each script begins with a header describing its input files and outputs. Scripts read their inputs from the working directory.
 
-  - Pathway-level functional rewiring analysis using MSigDB Hallmark pathways.
+## Data
 
-# Repository Structure
+- **TCGA-BRCA:** GDC Data Portal (https://portal.gdc.cancer.gov/), STAR – Counts (GENCODE v36), Data Release 45.0, accessed June 2026; retrieved with TCGAbiolinks. Sample identifiers and PAM50 assignments are provided in Table S1.
+- **GENCODE v49** transcript sequences (Code S7): https://www.gencodegenes.org/human/
+- **SCAN-B:** GEO accession GSE96058 (downloaded automatically by Code S12).
 
-This repository hosts the 9 core R scripts used to execute the entire analysis pipeline.
+## Requirements
 
-## Script Descriptions
+- R ≥ 4.6 with Bioconductor packages, including edgeR, limma, DESeq2, genefu, TCGAbiolinks, biomaRt, org.Hs.eg.db, GSVA, GEOquery, survival, survminer, maxstat, pROC, data.table, tidyverse, and ggpubr. Exact versions are listed in `sessionInfo.txt`.
+- BLAST+ 2.17.0 (`blastn`, `makeblastdb`) for Code S7.
 
-### Code S1 - Differentially Expressed Genes.R
-Performs DEG analysis using **edgeR** and **limma** to find subtype-specific signatures.
+## Citation
 
-### Code S2 - Survival Analysis & KM Plot.R
-Screens DEGs for prognostic potential using **Kaplan-Meier estimates** and generates KM plots.
+If you use this code, please cite:
 
-### Code S3 - Univariate & Multivariate Cox.R
-Builds univariate and multivariate **Cox models** to assess independent prognostic value.
+> Elsisi M, Maged M. Integrated Prioritization of Prognostic and Molecular Subtype-Discriminatory Candidate Biomarkers in Breast Cancer. *Network Modeling Analysis in Health Informatics and Bioinformatics* (under review).
 
-### Code S4 - Prognostic Biomarkers Validation.R
-Validates prognostic markers, checking for **proportional hazards** and adjusting models if necessary.
+## Contact
 
-### Code S5 - Receiver Operating Characteristic Curve and Area Under the Curve Analysis.R
-Evaluates diagnostic performance using **ROC curves** and 10-fold cross-validation.
-
-### Code S6 - Correlation with PAM50 Genes.R
-Assesses correlation between candidate markers and standard **PAM50 signature genes**.
-
-### Code S7 - Pseudogenes Decoupling Analysis.R
-Analyzes regulatory divergence between **pseudogenes** and their **parent genes**.
-
-### Code S8 - Functional Rewiring of lncRNAs.R
-Performs **GSVA** to identify subtype-specific pathway functional rewiring for **lncRNAs**.
-
-### Code S9 - Functional Rewiring of Protein-Coding Genes.R
-Performs **GSVA** to identify subtype-specific pathway functional rewiring for **protein-coding genes**.
+Mohamad Maged (corresponding author): momaged@nu.edu.eg
